@@ -11,9 +11,19 @@ on:
   push:
     branches: [ main ]
   pull_request:
+    types: [opened, synchronize]
     branches: [ main ]
 
 jobs:
+  invalidate-prs:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+    - name: Invalidate all PRs
+      run: |
+        gh api /repos/amisovic/orchestrator/dispatches -f event_type=invalidate -f client_payload[action]=invalidate -f client_payload[branch]=${{ github.head_ref }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.PAT_WORKFLOWS }}
   build:
     runs-on: ubuntu-latest
     steps:
